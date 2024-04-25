@@ -1,23 +1,51 @@
-class Product {
-  constructor(id, { name, price, description, stock, stores, size }) {
-    this.id = id;
-    this.name = name;
-    this.price = price;
-    this.description = description;
-    this.stock = stock;
-    this.stores = stores;
-    this.size = size;
-  }
-}
-
-const productDatabase = {};
+import { Widgets } from "./dbConnectors";
 
 const resolvers = {
-  getProduct: ({ id }) => new Product(id, productDatabase[id]),
-  createProduct: ({ input }) => {
-    const id = require("crypto").randomBytes(10).toString("hex");
-    productDatabase[id] = input;
-    return new Product(id, input);
+  getProduct: async ({ id }) => {
+    try {
+      const product = await Widgets.findById(id);
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  },
+  getAllProducts: async () => {
+    try {
+      return await Widgets.find();
+    } catch (error) {
+      throw error;
+    }
+  },
+  createProduct: async ({ input }) => {
+    const product = await new Widgets({
+      ...input,
+    });
+    product.id = product._id;
+    try {
+      product.save();
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  },
+  updateProduct: async ({ input }) => {
+    const product = await Widgets.findOneAndUpdate({ _id: input.id }, input, {
+      new: true,
+    });
+    try {
+      product.save();
+      return product;
+    } catch (error) {
+      throw error;
+    }
+  },
+  deleteProduct: async ({ id }) => {
+    try {
+      await Widgets.deleteOne({ _id: id });
+      return `Product with id: "${id}" deleted successfully!`;
+    } catch (error) {
+      throw error;
+    }
   },
 };
 
